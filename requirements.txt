@@ -1,0 +1,27 @@
+# ── Backend ──────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+python-multipart
+
+# ── ML / Vision ──────────────────────────────────────────
+torch
+torchvision
+ultralytics
+
+# ── NLP ──────────────────────────────────────────────────
+scikit-learn
+nltk
+
+# ── Data Processing ──────────────────────────────────────
+numpy
+pandas
+Pillow
+opencv-python
+
+# ── Utilities ────────────────────────────────────────────
+requests
+tqdm
+matplotlib
+seaborn
+joblib
+pyyaml
