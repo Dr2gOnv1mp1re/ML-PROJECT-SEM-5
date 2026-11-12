@@ -1,9 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # ── Backend ──────────────────────────────────────────────
 fastapi
 uvicorn[standard]
 python-multipart
 
-# ── ML / Vision ──────────────────────────────────────────
+# ── ML / Vision (CPU-only build for low memory footprint) ──
 torch
 torchvision
 ultralytics
