@@ -104,14 +104,18 @@ async def list_samples():
     """Lists available sample test images."""
     samples = []
     sample_dir = Path("notebooks")
-    for ext in ("*.jpg", "*.jpeg", "*.png"):
-        for p in sample_dir.glob(ext):
-            if "detected" not in p.name:
-                samples.append({
-                    "name": p.name,
-                    "path": str(p),
-                    "size_kb": round(p.stat().st_size / 1024, 1)
-                })
+    if not sample_dir.exists():
+        sample_dir = Path(__file__).resolve().parent.parent.parent / "notebooks"
+
+    if sample_dir.exists():
+        for ext in ("*.jpg", "*.jpeg", "*.png"):
+            for p in sample_dir.glob(ext):
+                if "detected" not in p.name:
+                    samples.append({
+                        "name": p.name,
+                        "path": str(p),
+                        "size_kb": round(p.stat().st_size / 1024, 1)
+                    })
     return {"samples": samples}
 
 
@@ -120,7 +124,10 @@ async def load_sample(sample_name: str, confidence: float = 0.18):
     """Loads and processes a sample image directly."""
     sample_path = Path("notebooks") / sample_name
     if not sample_path.exists():
-        raise HTTPException(status_code=404, detail="Sample image not found.")
+        sample_path = Path(__file__).resolve().parent.parent.parent / "notebooks" / sample_name
+
+    if not sample_path.exists():
+        raise HTTPException(status_code=404, detail=f"Sample image '{sample_name}' not found.")
 
     pipe = get_pipeline()
     try:

@@ -23,11 +23,17 @@ class SceneAnalyzer:
     def __init__(self):
         self.device = torch.device("cpu")
         print("[SceneAnalyzer] Loading pretrained MobileNetV3 for scene classification...")
-        weights = models.MobileNet_V3_Small_Weights.DEFAULT
-        self.model = models.mobilenet_v3_small(weights=weights).to(self.device)
-        self.model.eval()
-        self.categories = weights.meta["categories"]
-        self.preprocess = weights.transforms()
+        try:
+            weights = models.MobileNet_V3_Small_Weights.DEFAULT
+            self.model = models.mobilenet_v3_small(weights=weights).to(self.device)
+            self.model.eval()
+            self.categories = weights.meta["categories"]
+            self.preprocess = weights.transforms()
+        except Exception as e:
+            print(f"[SceneAnalyzer] Warning: MobileNetV3 model could not be initialized: {e}")
+            self.model = None
+            self.categories = []
+            self.preprocess = None
 
     def analyze(self, image_source: Union[str, Path, Image.Image, np.ndarray]) -> Dict[str, Any]:
         """
@@ -43,21 +49,25 @@ class SceneAnalyzer:
             raise ValueError(f"Unsupported image type: {type(image_source)}")
 
         # 1. ImageNet top predictions for scene / backdrop
-        img_tensor = self.preprocess(pil_img).unsqueeze(0).to(self.device)
-        with torch.no_grad():
-            output = self.model(img_tensor)
-            probs = torch.nn.functional.softmax(output[0], dim=0)
-
-        top5_prob, top5_catid = torch.topk(probs, 5)
         top_scenes = []
-        for i in range(top5_prob.size(0)):
-            cat_name = self.categories[top5_catid[i]]
-            score = float(top5_prob[i].item())
-            top_scenes.append({
-                "label": cat_name.replace("_", " "),
-                "confidence": round(score, 4),
-                "confidence_pct": round(score * 100, 1)
-            })
+        if self.model is not None and self.preprocess is not None:
+            try:
+                img_tensor = self.preprocess(pil_img).unsqueeze(0).to(self.device)
+                with torch.inference_mode():
+                    output = self.model(img_tensor)
+                    probs = torch.nn.functional.softmax(output[0], dim=0)
+
+                top5_prob, top5_catid = torch.topk(probs, 5)
+                for i in range(top5_prob.size(0)):
+                    cat_name = self.categories[top5_catid[i]]
+                    score = float(top5_prob[i].item())
+                    top_scenes.append({
+                        "label": cat_name.replace("_", " "),
+                        "confidence": round(score, 4),
+                        "confidence_pct": round(score * 100, 1)
+                    })
+            except Exception as e:
+                print(f"[SceneAnalyzer] Warning during scene inference: {e}")
 
         # 2. Lighting & Color Mood Analysis
         np_img = np.array(pil_img)

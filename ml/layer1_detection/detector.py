@@ -10,6 +10,7 @@ accessories, background elements, and small details.
 from pathlib import Path
 from typing import Dict, List, Any, Union, Tuple
 import cv2
+import torch
 import numpy as np
 from PIL import Image
 from ultralytics import YOLO
@@ -185,9 +186,10 @@ class ObjectDetector:
         img_h, img_w = cv_img.shape[:2]
         total_area = float(img_w * img_h)
 
-        # Run inference with Ultralytics YOLOv8
-        results = self.model(cv_img, conf=conf, iou=0.45, verbose=False)
-        first_result = results[0]
+        # Run inference with Ultralytics YOLOv8 in lean inference mode
+        with torch.inference_mode():
+            results = self.model(cv_img, conf=conf, iou=0.45, verbose=False)
+            first_result = results[0]
 
         detections: List[Dict[str, Any]] = []
         labels_count: Dict[str, int] = {}

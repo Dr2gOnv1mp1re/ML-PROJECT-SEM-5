@@ -14,14 +14,11 @@ nltk
 
 # ── Data Processing ──────────────────────────────────────
 numpy
-pandas
 Pillow
 opencv-python-headless
 
 # ── Utilities ────────────────────────────────────────────
 requests
 tqdm
-matplotlib
-seaborn
 joblib
 pyyaml

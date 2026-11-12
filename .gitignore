@@ -1,16 +1,18 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .env
-*.pt
-*.pkl
-*.h5
 data/raw/
-models/
 *.log
 .ipynb_checkpoints/
 dist/
 build/
 *.egg-info/
+
+# Ignore heavy research weights, but include deployable production models
+*.h5
+yolov8s-world.pt
+
